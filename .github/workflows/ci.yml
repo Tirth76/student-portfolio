@@ -1,0 +1,54 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # Job 1: Linting & Code Quality Check (Supplementary Problem 1)
+  lint:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18 Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm install
+
+      - name: Run Linter (oxlint)
+        run: npm run lint
+
+  # Job 2: Build, Install Dependencies, and Run Automated Tests
+  build-and-test:
+    name: Build & Automated Tests
+    runs-on: ubuntu-latest
+    needs: [lint] # Executes after linting passes successfully
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 18 Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Project & Backend Dependencies
+        run: |
+          npm install
+          npm --prefix task-manager-api install
+
+      - name: Run Automated Test Suite
+        run: npm test
+
+      - name: Build Frontend Production Bundle
+        run: npm run build
